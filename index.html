@@ -12,14 +12,12 @@
       overflow-x: hidden;
     }
 
-    /* Header Section */
     #header {
       height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: radial-gradient(ellipse at center, #000 60%, #0a0a0a 100%);
       position: relative;
     }
 
@@ -52,7 +50,6 @@
       z-index: 2;
     }
 
-    /* Spinning animation */
     .spinner {
       animation: spin 1s linear infinite;
     }
@@ -61,15 +58,18 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* Starry backdrop */
     .star {
       position: absolute;
       font-size: 14px;
       color: yellow;
-      top: 0;
+      animation: fall 4s linear infinite;
     }
 
-    /* Proxy Section */
+    @keyframes fall {
+      from { transform: translateY(-20px); opacity: 1; }
+      to { transform: translateY(100vh); opacity: 0; }
+    }
+
     #proxyArea {
       display: none;
     }
@@ -104,65 +104,67 @@
       margin: 10px;
     }
 
+    .tabContent {
+      display: none;
+    }
+
+    .visible {
+      display: block;
+    }
+
     iframe {
       width: 100%;
       height: 500px;
       border: 2px solid #00bfff;
     }
+
+    .homeTab {
+      text-align: center;
+      padding: 50px;
+      position: relative;
+    }
+
+    .homeLogo {
+      width: 80px;
+      animation: spin 2s linear infinite;
+    }
   </style>
 </head>
 <body>
 
-  <div id="header">
-    <img id="logo" src="https://via.placeholder.com/80x80.png?text=SP" alt="SimpleProxy Logo" />
-    <div id="searchContainer">
-      <input type="text" id="searchBox" placeholder="Search the web..." />
-      <button onclick="searchDuckDuckGo()">Go</button>
-    </div>
-  </div>
-
-  <div id="proxyArea">
-    <div id="tabsBar"></div>
-    <div class="controls">
-      <button onclick="goBack()">⬅ Back</button>
-      <button onclick="goForward()">➡ Forward</button>
-      <button onclick="reload()">🔄 Reload</button>
-      <button onclick="fullscreen()">⛶ Fullscreen</button>
-      <button onclick="closeIframe()">❌ Close View</button>
-      <button onclick="newTab()">➕ New Tab</button>
-    </div>
-    <div id="iframeContainer"></div>
-  </div>
+  <div id="tabsBar"></div>
+  <div id="proxyArea"></div>
 
   <script>
     let tabs = [];
     let activeTab = null;
 
-    // 💫 Generate static stars
-    for (let i = 0; i < 50; i++) {
-      const star = document.createElement('div');
-      star.className = 'star';
-      star.textContent = '★';
-      star.style.left = `${Math.random() * window.innerWidth}px`;
-      star.style.top = `${Math.random() * window.innerHeight}px`;
-      document.getElementById('header').appendChild(star);
+    // Create falling stars
+    function spawnStars(parent) {
+      for (let i = 0; i < 50; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.textContent = '★';
+        star.style.left = `${Math.random() * window.innerWidth}px`;
+        star.style.top = `${Math.random() * window.innerHeight}px`;
+        star.style.animationDelay = `${Math.random() * 4}s`;
+        parent.appendChild(star);
+      }
     }
 
-    // 🔎 Search DuckDuckGo
     function searchDuckDuckGo() {
-      const query = document.getElementById('searchBox').value;
+      const input = document.querySelector(`#${activeTab} .searchBox`);
+      const query = input.value;
       const url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`;
-      newTab(url, query);
-      document.getElementById('header').style.display = 'none';
-      document.getElementById('proxyArea').style.display = 'block';
+      updateTabContent(activeTab, url, query);
     }
 
-    function newTab(url = 'https://duckduckgo.com', title = 'New Tab') {
+    function newTab(url = '', title = 'New Tab') {
       const id = `tab${tabs.length}`;
-      tabs.push({ id, title, url });
+      tabs.push({ id, title, url, state: 'home' });
       activeTab = id;
       renderTabs();
-      renderIframe();
+      createTabView(id);
     }
 
     function renderTabs() {
@@ -174,11 +176,7 @@
 
         const titleSpan = document.createElement('span');
         titleSpan.textContent = tab.title;
-        titleSpan.onclick = () => {
-          activeTab = tab.id;
-          renderTabs();
-          renderIframe();
-        };
+        titleSpan.onclick = () => switchTab(tab.id);
 
         const closeBtn = document.createElement('span');
         closeBtn.textContent = '❌';
@@ -188,65 +186,98 @@
         tabDiv.appendChild(closeBtn);
         tabsBar.appendChild(tabDiv);
       });
+
+      const addBtn = document.createElement('button');
+      addBtn.textContent = '➕ New Tab';
+      addBtn.onclick = () => newTab();
+      tabsBar.appendChild(addBtn);
     }
 
-    function renderIframe() {
-      const logo = document.getElementById('logo');
-      logo.classList.add('spinner');
+    function createTabView(id) {
+      const proxyArea = document.getElementById('proxyArea');
 
-      const currentTab = tabs.find(t => t.id === activeTab);
-      if (!currentTab) return;
+      const tabDiv = document.createElement('div');
+      tabDiv.className = 'tabContent visible';
+      tabDiv.id = id;
 
-      document.getElementById('iframeContainer').innerHTML = `
-        <iframe id="proxyFrame" src="${currentTab.url}" sandbox="allow-scripts allow-same-origin allow-forms"
-          onload="document.getElementById('logo').classList.remove('spinner')"></iframe>
+      const home = document.createElement('div');
+      home.className = 'homeTab';
+
+      const logo = document.createElement('img');
+      logo.src = "https://via.placeholder.com/80x80.png?text=SP";
+      logo.className = 'homeLogo';
+      home.appendChild(logo);
+
+      const searchWrap = document.createElement('div');
+      searchWrap.style.marginTop = '20px';
+
+      const input = document.createElement('input');
+      input.placeholder = 'Search the web...';
+      input.className = 'searchBox';
+      input.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') searchDuckDuckGo();
+      });
+
+      const button = document.createElement('button');
+      button.textContent = 'Go';
+      button.onclick = searchDuckDuckGo;
+
+      searchWrap.appendChild(input);
+      searchWrap.appendChild(button);
+      home.appendChild(searchWrap);
+
+      spawnStars(home);
+      tabDiv.appendChild(home);
+      proxyArea.appendChild(tabDiv);
+    }
+
+    function updateTabContent(id, url, title) {
+      const tab = tabs.find(t => t.id === id);
+      tab.url = url;
+      tab.title = title;
+      tab.state = 'proxy';
+
+      const tabDiv = document.getElementById(id);
+      tabDiv.innerHTML = '';
+
+      const spinner = document.createElement('img');
+      spinner.src = "https://via.placeholder.com/80x80.png?text=SP";
+      spinner.className = 'homeLogo spinner';
+      spinner.style.display = 'block';
+      spinner.style.margin = '10px auto';
+      tabDiv.appendChild(spinner);
+
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.id = 'proxyFrame';
+      iframe.sandbox = 'allow-scripts allow-same-origin allow-forms';
+      iframe.onload = () => spinner.remove();
+
+      tabDiv.appendChild(iframe);
+
+      const controls = document.createElement('div');
+      controls.className = 'controls';
+
+      controls.innerHTML = `
+        <button onclick="goBack()">⬅</button>
+        <button onclick="goForward()">➡</button>
+        <button onclick="reload()">🔄</button>
+        <button onclick="fullscreen()">⛶</button>
+        <button onclick="closeView()">❌ Close View</button>
       `;
+
+      tabDiv.appendChild(controls);
+      renderTabs();
+    }
+
+    function switchTab(id) {
+      activeTab = id;
+      const views = document.querySelectorAll('.tabContent');
+      views.forEach(v => v.classList.remove('visible'));
+      document.getElementById(id).classList.add('visible');
+      renderTabs();
     }
 
     function closeTab(id) {
-      tabs = tabs.filter(t => t.id !== id);
-      if (activeTab === id) {
-        activeTab = tabs.length > 0 ? tabs[0].id : null;
-        renderIframe();
-      }
-      renderTabs();
-      if (tabs.length === 0) {
-        document.getElementById('proxyArea').style.display = 'none';
-        document.getElementById('header').style.display = 'flex';
-        document.getElementById('iframeContainer').innerHTML = '';
-      }
-    }
-
-    function goBack() {
-      document.getElementById('proxyFrame').contentWindow.history.back();
-    }
-
-    function goForward() {
-      document.getElementById('proxyFrame').contentWindow.history.forward();
-    }
-
-    function reload() {
-      const frame = document.getElementById('proxyFrame');
-      frame.src = frame.src;
-    }
-
-    function fullscreen() {
-      const frame = document.getElementById('proxyFrame');
-      if (frame.requestFullscreen) frame.requestFullscreen();
-      else if (frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
-    }
-
-    function closeIframe() {
-      document.getElementById('iframeContainer').innerHTML = '';
-    }
-
-    // 💡 Enter key triggers search
-    document.getElementById('searchBox').addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        searchDuckDuckGo();
-      }
-    });
-  </script>
-
-</body>
-</html>
+      document.getElementById(id)?.remove();
+      tabs = tabs.filter(t => t.id

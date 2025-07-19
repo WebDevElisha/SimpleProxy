@@ -14,11 +14,11 @@
     #header {
       text-align: center;
       padding: 50px;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
     }
 
     #searchContainer {
@@ -46,16 +46,19 @@
       display: flex;
       gap: 5px;
       padding: 10px;
-      border-bottom: 2px solid #00bfff;
       background-color: #111;
+      border-bottom: 2px solid #00bfff;
+      flex-wrap: wrap;
     }
 
     .tabBtn {
       background-color: #222;
       color: #00bfff;
       border: 1px solid #00bfff;
-      padding: 5px;
-      cursor: pointer;
+      padding: 5px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .activeTab {
@@ -92,11 +95,11 @@
   <div id="proxyArea">
     <div id="tabsBar"></div>
     <div class="controls">
-      <button onclick="goBack()">⬅</button>
-      <button onclick="goForward()">➡</button>
-      <button onclick="reload()">🔄</button>
-      <button onclick="fullscreen()">⛶</button>
-      <button onclick="closeIframe()">❌</button>
+      <button onclick="goBack()">⬅ Back</button>
+      <button onclick="goForward()">➡ Forward</button>
+      <button onclick="reload()">🔄 Reload</button>
+      <button onclick="fullscreen()">⛶ Fullscreen</button>
+      <button onclick="closeIframe()">❌ Close View</button>
       <button onclick="newTab()">➕ New Tab</button>
     </div>
     <div id="iframeContainer"></div>
@@ -126,25 +129,49 @@
       const tabsBar = document.getElementById('tabsBar');
       tabsBar.innerHTML = '';
       tabs.forEach(tab => {
-        const btn = document.createElement('button');
-        btn.className = 'tabBtn' + (tab.id === activeTab ? ' activeTab' : '');
-        btn.textContent = tab.title;
-        btn.onclick = () => {
+        const tabDiv = document.createElement('div');
+        tabDiv.className = 'tabBtn' + (tab.id === activeTab ? ' activeTab' : '');
+
+        const titleSpan = document.createElement('span');
+        titleSpan.textContent = tab.title;
+        titleSpan.style.cursor = 'pointer';
+        titleSpan.onclick = () => {
           activeTab = tab.id;
           renderTabs();
           renderIframe();
         };
-        tabsBar.appendChild(btn);
+
+        const closeBtn = document.createElement('span');
+        closeBtn.textContent = '❌';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.onclick = () => closeTab(tab.id);
+
+        tabDiv.appendChild(titleSpan);
+        tabDiv.appendChild(closeBtn);
+        tabsBar.appendChild(tabDiv);
       });
     }
 
     function renderIframe() {
       const currentTab = tabs.find(t => t.id === activeTab);
       if (!currentTab) return;
-
       document.getElementById('iframeContainer').innerHTML = `
         <iframe id="proxyFrame" src="${currentTab.url}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
       `;
+    }
+
+    function closeTab(id) {
+      tabs = tabs.filter(t => t.id !== id);
+      if (activeTab === id) {
+        activeTab = tabs.length > 0 ? tabs[0].id : null;
+        renderIframe();
+      }
+      renderTabs();
+      if (tabs.length === 0) {
+        document.getElementById('proxyArea').style.display = 'none';
+        document.getElementById('header').style.display = 'flex';
+        document.getElementById('iframeContainer').innerHTML = '';
+      }
     }
 
     function goBack() {
@@ -171,6 +198,13 @@
     function closeIframe() {
       document.getElementById('iframeContainer').innerHTML = '';
     }
+
+    // 🚀 Enable Enter key to trigger search
+    document.getElementById('searchBox').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        searchDuckDuckGo();
+      }
+    });
   </script>
 
 </body>

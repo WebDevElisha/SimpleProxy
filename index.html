@@ -5,138 +5,173 @@
   <title>SimpleProxy</title>
   <style>
     body {
+      margin: 0;
       background-color: #0a0a0a;
       color: #00bfff;
       font-family: 'Orbitron', sans-serif;
-      padding: 20px;
     }
-    input, button {
-      padding: 10px;
-      margin: 5px;
-      border: none;
-      border-radius: 4px;
+
+    #header {
+      text-align: center;
+      padding: 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
     }
+
+    #searchContainer {
+      display: flex;
+      gap: 10px;
+    }
+
     input {
+      padding: 10px;
+      width: 300px;
+      border: 1px solid #00bfff;
       background: black;
       color: #00bfff;
-      border: 1px solid #00bfff;
-      width: 50%;
     }
+
     button {
+      padding: 10px;
       background-color: #00bfff;
       color: black;
+      border: none;
       cursor: pointer;
     }
-    #tabNav {
-      margin-top: 10px;
-    }
-    .tabButton {
+
+    #tabsBar {
+      display: flex;
+      gap: 5px;
+      padding: 10px;
+      border-bottom: 2px solid #00bfff;
       background-color: #111;
+    }
+
+    .tabBtn {
+      background-color: #222;
       color: #00bfff;
       border: 1px solid #00bfff;
       padding: 5px;
-      margin-right: 5px;
       cursor: pointer;
-      display: inline-block;
     }
+
     .activeTab {
       background-color: #00bfff;
       color: black;
     }
+
+    .controls {
+      text-align: center;
+      margin: 10px;
+    }
+
     iframe {
       width: 100%;
       height: 500px;
       border: 2px solid #00bfff;
-      margin-top: 10px;
     }
-    .controls {
-      margin: 10px 0;
+
+    #proxyArea {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <h1>SimpleProxy</h1>
-  <input type="text" id="searchBox" placeholder="Search the web..." />
-  <button onclick="searchDuckDuckGo()">Search</button>
-  <div id="tabNav"></div>
-  <div class="controls">
-    <button onclick="goBack()">⬅ Back</button>
-    <button onclick="goForward()">➡ Forward</button>
-    <button onclick="reloadTab()">🔄 Reload</button>
-    <button onclick="fullscreenTab()">⛶ Fullscreen</button>
-    <button onclick="closeTab()">❌ Close</button>
+
+  <div id="header">
+    <h1>SimpleProxy</h1>
+    <div id="searchContainer">
+      <input type="text" id="searchBox" placeholder="Search the web..." />
+      <button onclick="searchDuckDuckGo()">Go</button>
+    </div>
   </div>
-  <div id="iframeContainer"></div>
+
+  <div id="proxyArea">
+    <div id="tabsBar"></div>
+    <div class="controls">
+      <button onclick="goBack()">⬅</button>
+      <button onclick="goForward()">➡</button>
+      <button onclick="reload()">🔄</button>
+      <button onclick="fullscreen()">⛶</button>
+      <button onclick="closeIframe()">❌</button>
+      <button onclick="newTab()">➕ New Tab</button>
+    </div>
+    <div id="iframeContainer"></div>
+  </div>
 
   <script>
     let tabs = [];
-    let activeTabIndex = null;
+    let activeTab = null;
 
     function searchDuckDuckGo() {
       const query = document.getElementById('searchBox').value;
       const url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`;
-      createTab(query, url);
+      newTab(url, query);
+      document.getElementById('header').style.display = 'none';
+      document.getElementById('proxyArea').style.display = 'block';
     }
 
-    function createTab(title, url) {
-      tabs.push({ title, url });
-      activeTabIndex = tabs.length - 1;
+    function newTab(url = 'https://duckduckgo.com', title = 'New Tab') {
+      const id = `tab${tabs.length}`;
+      tabs.push({ id, title, url });
+      activeTab = id;
       renderTabs();
-    }
-
-    function renderTabs() {
-      const nav = document.getElementById('tabNav');
-      nav.innerHTML = '';
-      tabs.forEach((tab, index) => {
-        const btn = document.createElement('div');
-        btn.className = 'tabButton' + (index === activeTabIndex ? ' activeTab' : '');
-        btn.textContent = tab.title;
-        btn.onclick = () => {
-          activeTabIndex = index;
-          renderTabs();
-        };
-        nav.appendChild(btn);
-      });
-
       renderIframe();
     }
 
+    function renderTabs() {
+      const tabsBar = document.getElementById('tabsBar');
+      tabsBar.innerHTML = '';
+      tabs.forEach(tab => {
+        const btn = document.createElement('button');
+        btn.className = 'tabBtn' + (tab.id === activeTab ? ' activeTab' : '');
+        btn.textContent = tab.title;
+        btn.onclick = () => {
+          activeTab = tab.id;
+          renderTabs();
+          renderIframe();
+        };
+        tabsBar.appendChild(btn);
+      });
+    }
+
     function renderIframe() {
-      const frameHTML = `
-        <iframe id="proxyFrame" src="${tabs[activeTabIndex].url}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+      const currentTab = tabs.find(t => t.id === activeTab);
+      if (!currentTab) return;
+
+      document.getElementById('iframeContainer').innerHTML = `
+        <iframe id="proxyFrame" src="${currentTab.url}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
       `;
-      document.getElementById('iframeContainer').innerHTML = frameHTML;
     }
 
     function goBack() {
-      const frame = document.getElementById('proxyFrame').contentWindow;
-      frame.history.back();
+      const frame = document.getElementById('proxyFrame');
+      frame.contentWindow.history.back();
     }
 
     function goForward() {
-      const frame = document.getElementById('proxyFrame').contentWindow;
-      frame.history.forward();
+      const frame = document.getElementById('proxyFrame');
+      frame.contentWindow.history.forward();
     }
 
-    function reloadTab() {
+    function reload() {
       const frame = document.getElementById('proxyFrame');
       frame.src = frame.src;
     }
 
-    function fullscreenTab() {
+    function fullscreen() {
       const frame = document.getElementById('proxyFrame');
-      if (frame.requestFullscreen) {
-        frame.requestFullscreen();
-      } else if (frame.webkitRequestFullscreen) {
-        frame.webkitRequestFullscreen();
-      }
+      if (frame.requestFullscreen) frame.requestFullscreen();
+      else if (frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
     }
 
-    function closeTab() {
-      tabs.splice(activeTabIndex, 1);
-      activeTabIndex = tabs.length > 0 ? 0 : null;
-      renderTabs();
+    function closeIframe() {
+      document.getElementById('iframeContainer').innerHTML = '';
     }
   </script>
+
 </body>
 </html>

@@ -9,21 +9,24 @@
       background-color: #0a0a0a;
       color: #00bfff;
       font-family: 'Orbitron', sans-serif;
+      overflow-x: hidden;
     }
 
+    /* Header Section */
     #header {
-      text-align: center;
-      padding: 50px;
       height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      background: radial-gradient(ellipse at center, #000 60%, #0a0a0a 100%);
+      position: relative;
     }
 
     #searchContainer {
       display: flex;
       gap: 10px;
+      z-index: 2;
     }
 
     input {
@@ -40,6 +43,35 @@
       color: black;
       border: none;
       cursor: pointer;
+    }
+
+    #logo {
+      width: 80px;
+      margin-bottom: 20px;
+      transition: transform 0.3s ease-in-out;
+      z-index: 2;
+    }
+
+    /* Spinning animation */
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Starry backdrop */
+    .star {
+      position: absolute;
+      font-size: 14px;
+      color: yellow;
+      top: 0;
+    }
+
+    /* Proxy Section */
+    #proxyArea {
+      display: none;
     }
 
     #tabsBar {
@@ -59,6 +91,7 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
+      cursor: pointer;
     }
 
     .activeTab {
@@ -76,16 +109,12 @@
       height: 500px;
       border: 2px solid #00bfff;
     }
-
-    #proxyArea {
-      display: none;
-    }
   </style>
 </head>
 <body>
 
   <div id="header">
-    <h1>SimpleProxy</h1>
+    <img id="logo" src="https://via.placeholder.com/80x80.png?text=SP" alt="SimpleProxy Logo" />
     <div id="searchContainer">
       <input type="text" id="searchBox" placeholder="Search the web..." />
       <button onclick="searchDuckDuckGo()">Go</button>
@@ -109,6 +138,17 @@
     let tabs = [];
     let activeTab = null;
 
+    // 💫 Generate static stars
+    for (let i = 0; i < 50; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.textContent = '★';
+      star.style.left = `${Math.random() * window.innerWidth}px`;
+      star.style.top = `${Math.random() * window.innerHeight}px`;
+      document.getElementById('header').appendChild(star);
+    }
+
+    // 🔎 Search DuckDuckGo
     function searchDuckDuckGo() {
       const query = document.getElementById('searchBox').value;
       const url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`;
@@ -134,7 +174,6 @@
 
         const titleSpan = document.createElement('span');
         titleSpan.textContent = tab.title;
-        titleSpan.style.cursor = 'pointer';
         titleSpan.onclick = () => {
           activeTab = tab.id;
           renderTabs();
@@ -143,7 +182,6 @@
 
         const closeBtn = document.createElement('span');
         closeBtn.textContent = '❌';
-        closeBtn.style.cursor = 'pointer';
         closeBtn.onclick = () => closeTab(tab.id);
 
         tabDiv.appendChild(titleSpan);
@@ -153,10 +191,15 @@
     }
 
     function renderIframe() {
+      const logo = document.getElementById('logo');
+      logo.classList.add('spinner');
+
       const currentTab = tabs.find(t => t.id === activeTab);
       if (!currentTab) return;
+
       document.getElementById('iframeContainer').innerHTML = `
-        <iframe id="proxyFrame" src="${currentTab.url}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+        <iframe id="proxyFrame" src="${currentTab.url}" sandbox="allow-scripts allow-same-origin allow-forms"
+          onload="document.getElementById('logo').classList.remove('spinner')"></iframe>
       `;
     }
 
@@ -175,13 +218,11 @@
     }
 
     function goBack() {
-      const frame = document.getElementById('proxyFrame');
-      frame.contentWindow.history.back();
+      document.getElementById('proxyFrame').contentWindow.history.back();
     }
 
     function goForward() {
-      const frame = document.getElementById('proxyFrame');
-      frame.contentWindow.history.forward();
+      document.getElementById('proxyFrame').contentWindow.history.forward();
     }
 
     function reload() {
@@ -199,7 +240,7 @@
       document.getElementById('iframeContainer').innerHTML = '';
     }
 
-    // 🚀 Enable Enter key to trigger search
+    // 💡 Enter key triggers search
     document.getElementById('searchBox').addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         searchDuckDuckGo();

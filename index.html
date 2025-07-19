@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SimpleProxy</title>
+  <title>SimpleProxyV1</title>
   <style>
     body {
       margin: 0;
@@ -12,7 +12,7 @@
       overflow-x: hidden;
     }
 
-    /* Tabs Bar */
+    /* Tab System */
     #tabsBar {
       display: flex;
       gap: 5px;
@@ -38,6 +38,14 @@
       color: black;
     }
 
+    .tabContent {
+      display: none;
+    }
+
+    .visible {
+      display: block;
+    }
+
     button {
       padding: 10px;
       background-color: #00bfff;
@@ -48,43 +56,33 @@
 
     input {
       padding: 10px;
-      width: 300px;
+      width: 400px;
+      font-size: 18px;
       border: 1px solid #00bfff;
       background: black;
       color: #00bfff;
     }
 
-    .tabContent {
-      display: none;
-    }
-
-    .visible {
-      display: block;
-    }
-
+    /* Home Screen */
     .homeView {
       text-align: center;
-      padding: 40px;
       position: relative;
       height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 40px;
     }
 
     .searchContainer {
-      margin-top: 20px;
       display: flex;
-      justify-content: center;
       gap: 10px;
-    }
-
-    iframe {
-      width: 100%;
-      height: 500px;
-      border: 2px solid #00bfff;
-    }
-
-    .controls {
-      text-align: center;
-      margin: 10px 0;
+      z-index: 2;
     }
 
     .star {
@@ -96,15 +94,27 @@
     }
 
     @keyframes fall {
-      from { top: -20px; opacity: 1; }
-      to { top: 100vh; opacity: 0; }
+      0% { top: -20px; opacity: 1; }
+      100% { top: 100vh; opacity: 0; }
+    }
+
+    /* Iframe and Controls */
+    iframe {
+      width: 100%;
+      height: 500px;
+      border: 2px solid #00bfff;
+    }
+
+    .controls {
+      text-align: center;
+      margin: 10px 0;
     }
 
     .spinner {
       animation: spin 1.2s linear infinite;
-      width: 80px;
-      margin: 20px auto;
+      width: 120px;
       display: block;
+      margin: 20px auto;
     }
 
     @keyframes spin {
@@ -183,8 +193,8 @@
       home.className = "homeView";
 
       const logo = document.createElement("img");
-      logo.src = "https://via.placeholder.com/80x80.png?text=SP";
-      logo.className = "spinner";
+      logo.src = "https://via.placeholder.com/120x120.png?text=SP";
+      logo.className = "logo";
       home.appendChild(logo);
 
       const searchWrap = document.createElement("div");
@@ -231,7 +241,7 @@
       container.innerHTML = "";
 
       const loading = document.createElement("img");
-      loading.src = "https://via.placeholder.com/80x80.png?text=SP";
+      loading.src = "https://via.placeholder.com/120x120.png?text=SP";
       loading.className = "spinner";
       container.appendChild(loading);
 
@@ -239,7 +249,6 @@
       iframe.src = url;
       iframe.onload = () => loading.remove();
       iframe.id = "proxyFrame";
-
       container.appendChild(iframe);
 
       const controls = document.createElement("div");
@@ -282,7 +291,7 @@
       else if (frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
     }
 
-    // Start with one tab
+    // Init first tab
     newTab();
   </script>
 </body>

@@ -11,6 +11,7 @@
       font-family: 'Orbitron', sans-serif;
       overflow-x: hidden;
     }
+
     #tabsBar {
       display: flex;
       gap: 5px;
@@ -19,6 +20,7 @@
       border-bottom: 2px solid #00bfff;
       flex-wrap: wrap;
     }
+
     .tabBtn {
       background-color: #222;
       color: #00bfff;
@@ -30,10 +32,12 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
+
     .activeTab {
       background-color: #00ff66 !important;
       color: black !important;
     }
+
     button {
       padding: 10px;
       background-color: #00bfff;
@@ -42,6 +46,7 @@
       cursor: pointer;
       font-size: 16px;
     }
+
     input {
       padding: 10px;
       width: 400px;
@@ -51,8 +56,10 @@
       color: #00bfff;
       border-radius: 12px;
     }
+
     .tabContent { display: none; }
     .visible { display: block; }
+
     .homeView {
       text-align: center;
       position: relative;
@@ -63,15 +70,18 @@
       align-items: center;
       overflow: hidden;
     }
+
     .title {
       font-size: 40px;
       margin-bottom: 20px;
     }
+
     .searchContainer {
       display: flex;
       gap: 10px;
       z-index: 2;
     }
+
     .star {
       position: absolute;
       font-size: 16px;
@@ -79,19 +89,23 @@
       animation: fall 4s linear infinite;
       pointer-events: none;
     }
+
     @keyframes fall {
       from { transform: translateY(0); opacity: 1; }
-      to { transform: translateY(100vh); opacity: 0; }
+      to   { transform: translateY(100vh); opacity: 0; }
     }
+
     iframe {
       width: 100%;
       height: 500px;
       border: 2px solid #00bfff;
     }
+
     .controls {
       text-align: center;
       margin: 10px 0;
     }
+
     .loadingText {
       font-size: 24px;
       text-align: center;
@@ -99,6 +113,7 @@
       color: #00bfff;
       margin: 20px;
     }
+
     @keyframes pulse {
       from { opacity: 0.3; }
       to   { opacity: 1; }
@@ -153,9 +168,7 @@
 
       function switchTab(id) {
         activeTab = id;
-        document.querySelectorAll(".tabContent").forEach(div =>
-          div.classList.remove("visible")
-        );
+        document.querySelectorAll(".tabContent").forEach(div => div.classList.remove("visible"));
         document.getElementById(id)?.classList.add("visible");
         renderTabs();
       }
@@ -197,16 +210,12 @@
         searchWrap.appendChild(button);
         home.appendChild(searchWrap);
 
-        // 🌧 Create continuous rainfall-style stars
         for (let i = 0; i < 30; i++) {
           const star = document.createElement("div");
           star.className = "star";
           star.textContent = "★";
-          // Random X: full width spread
           star.style.left = `${Math.random() * window.innerWidth}px`;
-          // Random Y: start offscreen
           star.style.top = `${Math.random() * -300}px`;
-          // Random animation delay
           star.style.animationDelay = `${Math.random() * 4}s`;
           home.appendChild(star);
         }
@@ -251,7 +260,6 @@
         renderTabs();
       }
 
-      // 🎮 Scoped iframe actions
       function getFrame(tabId) {
         return document.getElementById(`proxyFrame-${tabId}`);
       }
@@ -284,7 +292,14 @@
         switchTab(tabId);
       }
 
-      // 🚀 Launch tab immediately
+      // 🌍 Expose control functions globally for HTML buttons
+      window.goBack = goBack;
+      window.goForward = goForward;
+      window.reload = reload;
+      window.fullscreen = fullscreen;
+      window.closeView = closeView;
+
+      // 🚀 Launch first tab
       newTab();
     });
   </script>

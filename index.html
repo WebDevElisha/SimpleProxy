@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>SimpleProxy</title>
   <style>
     body {
@@ -51,8 +51,12 @@
       color: #00bfff;
       border-radius: 12px;
     }
-    .tabContent { display: none; }
-    .visible { display: block; }
+    .tabContent {
+      display: none;
+    }
+    .visible {
+      display: block;
+    }
     .homeView {
       text-align: center;
       position: relative;
@@ -80,7 +84,7 @@
     }
     @keyframes fall {
       from { transform: translateY(0); opacity: 1; }
-      to { transform: translateY(100vh); opacity: 0; }
+      to   { transform: translateY(100vh); opacity: 0; }
     }
     iframe {
       width: 100%;
@@ -153,9 +157,7 @@
 
       function switchTab(id) {
         activeTab = id;
-        document.querySelectorAll(".tabContent").forEach(div =>
-          div.classList.remove("visible")
-        );
+        document.querySelectorAll(".tabContent").forEach(div => div.classList.remove("visible"));
         document.getElementById(id)?.classList.add("visible");
         renderTabs();
       }
@@ -272,9 +274,7 @@
       }
 
       function fullscreen() {
-        const frame = document.getElementById("proxyFrame");
-        if (frame?.requestFullscreen)
-                function fullscreen() {
+      function fullscreen() {
         const frame = document.getElementById("proxyFrame");
         if (frame?.requestFullscreen) frame.requestFullscreen();
       }

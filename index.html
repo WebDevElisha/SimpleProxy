@@ -125,7 +125,7 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      console.log("🌐 DOM fully loaded, initializing SimpleProxy...");
+      console.log("🌐 SimpleProxy initialized");
 
       let tabs = [];
       let activeTab = null;
@@ -175,7 +175,7 @@
         );
         document.getElementById(id)?.classList.add("visible");
         renderTabs();
-        console.log("🟢 Switched to tab:", id);
+        console.log("🟢 Active tab:", id);
       }
 
       function closeTab(id) {
@@ -219,7 +219,7 @@
           const star = document.createElement("div");
           star.className = "star";
           star.textContent = "★";
-          star.style.left = `${Math.random() * window.innerWidth}px`;
+          star.style.left = `${window.innerWidth * (0.4 + Math.random() * 0.2)}px`;
           star.style.top = `${Math.random() * -200}px`;
           star.style.animationDelay = `${Math.random() * 0.5}s`;
           home.appendChild(star);
@@ -227,7 +227,7 @@
 
         wrapper.appendChild(home);
         contentArea.appendChild(wrapper);
-        console.log("🌠 Starfall and home screen initialized for:", id);
+        console.log("🌠 Starfall and home screen set for:", id);
       }
 
       function performSearch(tabId) {
@@ -250,21 +250,45 @@
         const iframe = document.createElement("iframe");
         iframe.src = url;
         iframe.onload = () => loadingMsg.remove();
-        iframe.id = "proxyFrame";
+        iframe.id = `proxyFrame-${tabId}`;
         container.appendChild(iframe);
 
         const controls = document.createElement("div");
         controls.className = "controls";
         controls.innerHTML = `
-          <button onclick="goBack()">⬅ Back</button>
-          <button onclick="goForward()">➡ Forward</button>
-          <button onclick="reload()">🔄 Reload</button>
-          <button onclick="fullscreen()">⛶ Fullscreen</button>
+          <button onclick="goBack('${tabId}')">⬅ Back</button>
+          <button onclick="goForward('${tabId}')">➡ Forward</button>
+          <button onclick="reload('${tabId}')">🔄 Reload</button>
+          <button onclick="fullscreen('${tabId}')">⛶ Fullscreen</button>
           <button onclick="closeView('${tabId}')">❌ Close View</button>
         `;
         container.appendChild(controls);
         renderTabs();
-        console.log("🔎 Search performed for tab:", tabId);
+        console.log("🔍 Search triggered for:", tabId);
+      }
+
+      function getFrame(tabId) {
+        return document.getElementById(`proxyFrame-${tabId}`);
+      }
+
+      function goBack(tabId) {
+        const frame = getFrame(tabId);
+        if (frame?.contentWindow) frame.contentWindow.history.back();
+      }
+
+      function goForward(tabId) {
+        const frame = getFrame(tabId);
+        if (frame?.contentWindow) frame.contentWindow.history.forward();
+      }
+
+      function reload(tabId) {
+        const frame = getFrame(tabId);
+        if (frame?.contentWindow) frame.contentWindow.location.reload();
+      }
+
+      function fullscreen(tabId) {
+        const frame = getFrame(tabId);
+        if (frame?.requestFullscreen) frame.requestFullscreen();
       }
 
       function closeView(tabId) {
@@ -275,27 +299,7 @@
         switchTab(tabId);
       }
 
-      function goBack() {
-        const frame = document.getElementById("proxyFrame");
-        if (frame?.contentWindow) frame.contentWindow.history.back();
-      }
-
-      function goForward() {
-        const frame = document.getElementById("proxyFrame");
-        if (frame?.contentWindow) frame.contentWindow.history.forward();
-      }
-
-      function reload() {
-        const frame = document.getElementById("proxyFrame");
-        if (frame?.contentWindow) frame.contentWindow.location.reload();
-      }
-
-      function fullscreen() {
-        const frame = document.getElementById("proxyFrame");
-        if (frame?.requestFullscreen) frame.requestFullscreen();
-      }
-
-      // 🚀 Launch tab immediately
+      // 🌈 Launch first tab immediately
       newTab();
     });
   </script>

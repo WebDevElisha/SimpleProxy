@@ -95,8 +95,8 @@
     }
 
     @keyframes fall {
-      0% { transform: translateY(0); opacity: 1; }
-      100% { transform: translateY(100vh); opacity: 0; }
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(100vh); opacity: 0; }
     }
 
     iframe {
@@ -125,175 +125,175 @@
   </style>
 </head>
 <body>
-
   <div id="tabsBar"></div>
   <div id="contentArea"></div>
 
   <script>
-    let tabs = [];
-    let activeTab = null;
+    document.addEventListener("DOMContentLoaded", () => {
+      let tabs = [];
+      let activeTab = null;
 
-    function newTab(title = "New Tab", url = "") {
-      const id = `tab${tabs.length}`;
-      tabs.push({ id, title, url, state: "home" });
-      renderTabs();
-      createTabContent(id);
-      switchTab(id);
-    }
-
-    function renderTabs() {
-      const tabsBar = document.getElementById("tabsBar");
-      tabsBar.innerHTML = "";
-
-      tabs.forEach(tab => {
-        const btn = document.createElement("div");
-        btn.className = "tabBtn";
-        if (tab.id === activeTab) btn.classList.add("activeTab");
-
-        const title = document.createElement("span");
-        title.textContent = tab.title;
-        title.onclick = () => switchTab(tab.id);
-
-        const close = document.createElement("span");
-        close.textContent = "❌";
-        close.onclick = () => closeTab(tab.id);
-
-        btn.appendChild(title);
-        btn.appendChild(close);
-        tabsBar.appendChild(btn);
-      });
-
-      const addBtn = document.createElement("button");
-      addBtn.textContent = "➕ New Tab";
-      addBtn.onclick = () => newTab();
-      tabsBar.appendChild(addBtn);
-    }
-
-    function switchTab(id) {
-      activeTab = id;
-      document.querySelectorAll(".tabContent").forEach(div => div.classList.remove("visible"));
-      document.getElementById(id)?.classList.add("visible");
-      renderTabs();
-    }
-
-    function closeTab(id) {
-      document.getElementById(id)?.remove();
-      tabs = tabs.filter(t => t.id !== id);
-      if (tabs.length > 0) switchTab(tabs[0].id);
-    }
-
-    function createTabContent(id) {
-      const contentArea = document.getElementById("contentArea");
-      const wrapper = document.createElement("div");
-      wrapper.className = "tabContent";
-      wrapper.id = id;
-
-      const home = document.createElement("div");
-      home.className = "homeView";
-
-      const title = document.createElement("div");
-      title.className = "title";
-      title.textContent = "SimpleProxy";
-      home.appendChild(title);
-
-      const searchWrap = document.createElement("div");
-      searchWrap.className = "searchContainer";
-
-      const input = document.createElement("input");
-      input.placeholder = "Search the web...";
-      input.className = "searchBox";
-      input.addEventListener("keypress", e => {
-        if (e.key === "Enter") performSearch(id);
-      });
-
-      const button = document.createElement("button");
-      button.textContent = "Go";
-      button.onclick = () => performSearch(id);
-
-      searchWrap.appendChild(input);
-      searchWrap.appendChild(button);
-      home.appendChild(searchWrap);
-
-      for (let i = 0; i < 30; i++) {
-        const star = document.createElement("div");
-        star.className = "star";
-        star.textContent = "★";
-        star.style.left = `${Math.random() * window.innerWidth}px`;
-        star.style.top = `${Math.random() * -100}px`;
-        star.style.animationDelay = "0s";
-        home.appendChild(star);
+      function newTab(title = "New Tab", url = "") {
+        const id = `tab${tabs.length}`;
+        tabs.push({ id, title, url, state: "home" });
+        renderTabs();
+        createTabContent(id);
+        switchTab(id);
       }
 
-      wrapper.appendChild(home);
-      contentArea.appendChild(wrapper);
-    }
+      function renderTabs() {
+        const tabsBar = document.getElementById("tabsBar");
+        tabsBar.innerHTML = "";
 
-    function performSearch(tabId) {
-      const tab = tabs.find(t => t.id === tabId);
-      const input = document.querySelector(`#${tabId} .searchBox`);
-      const query = input.value;
-      const url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`;
-      tab.url = url;
-      tab.title = query;
-      tab.state = "proxy";
+        tabs.forEach(tab => {
+          const btn = document.createElement("div");
+          btn.className = "tabBtn";
+          if (tab.id === activeTab) btn.classList.add("activeTab");
 
-      const container = document.getElementById(tabId);
-      container.innerHTML = "";
+          const title = document.createElement("span");
+          title.textContent = tab.title;
+          title.onclick = () => switchTab(tab.id);
 
-      const loadingMsg = document.createElement("div");
-      loadingMsg.className = "loadingText";
-      loadingMsg.textContent = "Loading...";
-      container.appendChild(loadingMsg);
+          const close = document.createElement("span");
+          close.textContent = "❌";
+          close.onclick = () => closeTab(tab.id);
 
-      const iframe = document.createElement("iframe");
-      iframe.src = url;
-      iframe.onload = () => loadingMsg.remove();
-      iframe.id = "proxyFrame";
-      container.appendChild(iframe);
+          btn.appendChild(title);
+          btn.appendChild(close);
+          tabsBar.appendChild(btn);
+        });
 
-      const controls = document.createElement("div");
-      controls.className = "controls";
-      controls.innerHTML = `
-        <button onclick="goBack()">⬅ Back</button>
-        <button onclick="goForward()">➡ Forward</button>
-        <button onclick="reload()">🔄 Reload</button>
-        <button onclick="fullscreen()">⛶ Fullscreen</button>
-        <button onclick="closeView('${tabId}')">❌ Close View</button>
-      `;
-      container.appendChild(controls);
-      renderTabs();
-    }
+        const addBtn = document.createElement("button");
+        addBtn.textContent = "➕ New Tab";
+        addBtn.onclick = () => newTab();
+        tabsBar.appendChild(addBtn);
+      }
 
-    function closeView(tabId) {
-      const tab = tabs.find(t => t.id === tabId);
-      tab.state = "home";
-      document.getElementById(tabId)?.remove();
-      createTabContent(tabId);
-      switchTab(tabId);
-    }
+      function switchTab(id) {
+        activeTab = id;
+        document.querySelectorAll(".tabContent").forEach(div => div.classList.remove("visible"));
+        document.getElementById(id)?.classList.add("visible");
+        renderTabs();
+      }
 
-    function goBack() {
-      const frame = document.getElementById("proxyFrame");
-      if (frame?.contentWindow) frame.contentWindow.history.back();
-    }
+      function closeTab(id) {
+        document.getElementById(id)?.remove();
+        tabs = tabs.filter(t => t.id !== id);
+        if (tabs.length > 0) switchTab(tabs[0].id);
+      }
 
-    function goForward() {
-      const frame = document.getElementById("proxyFrame");
-      if (frame?.contentWindow) frame.contentWindow.history.forward();
-    }
+      function createTabContent(id) {
+        const contentArea = document.getElementById("contentArea");
+        const wrapper = document.createElement("div");
+        wrapper.className = "tabContent";
+        wrapper.id = id;
 
-    function reload() {
-      const frame = document.getElementById("proxyFrame");
-      if (frame) frame.src = frame.src;
-    }
+        const home = document.createElement("div");
+        home.className = "homeView";
 
-    function fullscreen() {
-      const frame = document.getElementById("proxyFrame");
-      if (frame?.requestFullscreen) frame.requestFullscreen();
-    }
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = "SimpleProxy";
+        home.appendChild(title);
 
-    // Initialize first tab
-    newTab();
+        const searchWrap = document.createElement("div");
+        searchWrap.className = "searchContainer";
+
+        const input = document.createElement("input");
+        input.placeholder = "Search the web...";
+        input.className = "searchBox";
+        input.addEventListener("keypress", e => {
+          if (e.key === "Enter") performSearch(id);
+        });
+
+        const button = document.createElement("button");
+        button.textContent = "Go";
+        button.onclick = () => performSearch(id);
+
+        searchWrap.appendChild(input);
+        searchWrap.appendChild(button);
+        home.appendChild(searchWrap);
+
+        for (let i = 0; i < 30; i++) {
+          const star = document.createElement("div");
+          star.className = "star";
+          star.textContent = "★";
+          star.style.left = `${Math.random() * window.innerWidth}px`;
+          star.style.top = `${Math.random() * -100}px`;
+          star.style.animationDelay = "0s";
+          home.appendChild(star);
+        }
+
+        wrapper.appendChild(home);
+        contentArea.appendChild(wrapper);
+      }
+
+      function performSearch(tabId) {
+        const tab = tabs.find(t => t.id === tabId);
+        const input = document.querySelector(`#${tabId} .searchBox`);
+        const query = input.value;
+        const url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`;
+        tab.url = url;
+        tab.title = query;
+        tab.state = "proxy";
+
+        const container = document.getElementById(tabId);
+        container.innerHTML = "";
+
+        const loadingMsg = document.createElement("div");
+        loadingMsg.className = "loadingText";
+        loadingMsg.textContent = "Loading...";
+        container.appendChild(loadingMsg);
+
+        const iframe = document.createElement("iframe");
+        iframe.src = url;
+        iframe.onload = () => loadingMsg.remove();
+        iframe.id = "proxyFrame";
+        container.appendChild(iframe);
+
+        const controls = document.createElement("div");
+        controls.className = "controls";
+        controls.innerHTML = `
+          <button onclick="goBack()">⬅ Back</button>
+          <button onclick="goForward()">➡ Forward</button>
+          <button onclick="reload()">🔄 Reload</button>
+          <button onclick="fullscreen()">⛶ Fullscreen</button>
+          <button onclick="closeView('${tabId}')">❌ Close View</button>
+        `;
+        container.appendChild(controls);
+        renderTabs();
+      }
+
+      function closeView(tabId) {
+        const tab = tabs.find(t => t.id === tabId);
+        tab.state = "home";
+        document.getElementById(tabId)?.remove();
+        createTabContent(tabId);
+        switchTab(tabId);
+      }
+
+      function goBack() {
+        const frame = document.getElementById("proxyFrame");
+        if (frame?.contentWindow) frame.contentWindow.history.back();
+      }
+
+      function goForward() {
+        const frame = document.getElementById("proxyFrame");
+        if (frame?.contentWindow) frame.contentWindow.history.forward();
+      }
+
+      function reload() {
+        const frame = document.getElementById("proxyFrame");
+        if (frame) frame.src = frame.src;
+      }
+
+      function fullscreen() {
+        const frame = document.getElementById("proxyFrame");
+        if (frame?.requestFullscreen) frame.request
+              }
+ // Initialize the first tab
+      newTab();
+    });
   </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>SimpleProxy</title>
   <style>
     body {
@@ -95,8 +95,8 @@
     }
 
     @keyframes fall {
-      from { transform: translateY(0); opacity: 1; }
-      to { transform: translateY(100vh); opacity: 0; }
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
     }
 
     iframe {
@@ -283,15 +283,18 @@
       }
 
       function reload() {
+        const frame = document.getElementById("
+                                                    function reload() {
         const frame = document.getElementById("proxyFrame");
         if (frame) frame.src = frame.src;
       }
 
       function fullscreen() {
         const frame = document.getElementById("proxyFrame");
-        if (frame?.requestFullscreen) frame.request
-              }
- // Initialize the first tab
+        if (frame?.requestFullscreen) frame.requestFullscreen();
+      }
+
+      // 🚀 Initialize the first tab on page load
       newTab();
     });
   </script>

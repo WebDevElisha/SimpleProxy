@@ -147,9 +147,7 @@
         tabs.forEach(tab => {
           const btn = document.createElement("div");
           btn.className = "tabBtn";
-          if (tab.id === activeTab) {
-            btn.classList.add("activeTab");
-          }
+          if (tab.id === activeTab) btn.classList.add("activeTab");
 
           const title = document.createElement("span");
           title.textContent = tab.title;
@@ -251,8 +249,9 @@
               newTab("Redirected", newUrl);
               return null;
             };
+            console.log("🕵️ window.open intercepted and rerouted:", url);
           } catch (err) {
-            console.warn("🚫 Couldn’t intercept window.open:", err);
+            console.warn("🚫 CORS blocked window.open override:", err);
           }
         };
         container.appendChild(iframe);

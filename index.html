@@ -128,7 +128,7 @@
       let tabs = [];
       let activeTab = null;
 
-      function newTab(title = "New Tab", url = "") {
+      function newTab(title = "Simple Tab", url = "") {
         const id = `tab${tabs.length}`;
         tabs.push({ id, title, url, state: url ? "proxy" : "home" });
         renderTabs();
@@ -245,22 +245,33 @@
         iframe.onload = () => {
           loadingMsg.remove();
           try {
-            // Redirect window.open to same iframe
             iframe.contentWindow.open = function (newUrl) {
               iframe.src = newUrl;
               return null;
             };
 
-            // Detect CTRL+Click on links
             iframe.contentWindow.document.addEventListener("click", e => {
               const link = e.target.closest("a");
               if (link && e.ctrlKey && link.href) {
                 e.preventDefault();
-                newTab("CTRL+Click", link.href);
+                newTab("Simple Tab", link.href);
               }
             });
+
+            setTimeout(() => {
+              const pageTitle = iframe.contentWindow.document.title;
+              const tab = tabs.find(t => t.id === tabId);
+              if (
+                pageTitle &&
+                tab &&
+                !pageTitle.toLowerCase().includes("duckduckgo")
+              ) {
+                tab.title = pageTitle;
+                renderTabs();
+              }
+            }, 1000);
           } catch (err) {
-            console.warn("🚫 Could not intercept link behavior due to CORS:", err);
+            console.warn("🚫 Could not update tab title due to CORS:", err);
           }
         };
         container.appendChild(iframe);

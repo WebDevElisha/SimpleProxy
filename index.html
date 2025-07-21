@@ -245,13 +245,22 @@
         iframe.onload = () => {
           loadingMsg.remove();
           try {
+            // Redirect window.open to same iframe
             iframe.contentWindow.open = function (newUrl) {
-              newTab("Redirected", newUrl);
+              iframe.src = newUrl;
               return null;
             };
-            console.log("🕵️ window.open intercepted and rerouted:", url);
+
+            // Detect CTRL+Click on links
+            iframe.contentWindow.document.addEventListener("click", e => {
+              const link = e.target.closest("a");
+              if (link && e.ctrlKey && link.href) {
+                e.preventDefault();
+                newTab("CTRL+Click", link.href);
+              }
+            });
           } catch (err) {
-            console.warn("🚫 CORS blocked window.open override:", err);
+            console.warn("🚫 Could not intercept link behavior due to CORS:", err);
           }
         };
         container.appendChild(iframe);

@@ -130,9 +130,13 @@
 
       function newTab(title = "New Tab", url = "") {
         const id = `tab${tabs.length}`;
-        tabs.push({ id, title, url, state: "home" });
+        tabs.push({ id, title, url, state: url ? "proxy" : "home" });
         renderTabs();
-        createTabContent(id);
+        if (url) {
+          createProxyContent(id, url);
+        } else {
+          createTabContent(id);
+        }
         switchTab(id);
       }
 
@@ -168,7 +172,9 @@
 
       function switchTab(id) {
         activeTab = id;
-        document.querySelectorAll(".tabContent").forEach(div => div.classList.remove("visible"));
+        document.querySelectorAll(".tabContent").forEach(div =>
+          div.classList.remove("visible")
+        );
         document.getElementById(id)?.classList.add("visible");
         renderTabs();
       }
@@ -224,17 +230,10 @@
         contentArea.appendChild(wrapper);
       }
 
-      function performSearch(tabId) {
-        const tab = tabs.find(t => t.id === tabId);
-        const input = document.querySelector(`#${tabId} .searchBox`);
-        const query = input.value;
-        const url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`;
-        tab.url = url;
-        tab.title = query;
-        tab.state = "proxy";
-
-        const container = document.getElementById(tabId);
-        container.innerHTML = "";
+      function createProxyContent(tabId, url) {
+        const container = document.createElement("div");
+        container.className = "tabContent visible";
+        container.id = tabId;
 
         const loadingMsg = document.createElement("div");
         loadingMsg.className = "loadingText";
@@ -243,8 +242,19 @@
 
         const iframe = document.createElement("iframe");
         iframe.src = url;
-        iframe.onload = () => loadingMsg.remove();
         iframe.id = `proxyFrame-${tabId}`;
+        iframe.setAttribute("sandbox", "allow-scripts allow-forms allow-same-origin");
+        iframe.onload = () => {
+          loadingMsg.remove();
+          try {
+            iframe.contentWindow.open = function (newUrl) {
+              newTab("Redirected", newUrl);
+              return null;
+            };
+          } catch (err) {
+            console.warn("🚫 Couldn’t intercept window.open:", err);
+          }
+        };
         container.appendChild(iframe);
 
         const controls = document.createElement("div");
@@ -257,6 +267,19 @@
           <button onclick="closeView('${tabId}')">❌ Close View</button>
         `;
         container.appendChild(controls);
+        document.getElementById("contentArea").appendChild(container);
+      }
+
+      function performSearch(tabId) {
+        const tab = tabs.find(t => t.id === tabId);
+        const input = document.querySelector(`#${tabId} .searchBox`);
+        const query = input.value;
+        const url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`;
+        tab.url = url;
+        tab.title = query;
+        tab.state = "proxy";
+        document.getElementById(tabId)?.remove();
+        createProxyContent(tabId, url);
         renderTabs();
       }
 
@@ -292,14 +315,12 @@
         switchTab(tabId);
       }
 
-      // 🌍 Expose control functions globally for HTML buttons
       window.goBack = goBack;
       window.goForward = goForward;
       window.reload = reload;
       window.fullscreen = fullscreen;
       window.closeView = closeView;
 
-      // 🚀 Launch first tab
       newTab();
     });
   </script>

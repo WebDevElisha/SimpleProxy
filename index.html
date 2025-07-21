@@ -11,6 +11,7 @@
       font-family: 'Orbitron', sans-serif;
       overflow-x: hidden;
     }
+
     #tabsBar {
       display: flex;
       gap: 5px;
@@ -19,6 +20,7 @@
       border-bottom: 2px solid #00bfff;
       flex-wrap: wrap;
     }
+
     .tabBtn {
       background-color: #222;
       color: #00bfff;
@@ -30,10 +32,12 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
+
     .activeTab {
       background-color: #00ff66 !important;
       color: black !important;
     }
+
     button {
       padding: 10px;
       background-color: #00bfff;
@@ -42,6 +46,7 @@
       cursor: pointer;
       font-size: 16px;
     }
+
     input {
       padding: 10px;
       width: 400px;
@@ -51,12 +56,10 @@
       color: #00bfff;
       border-radius: 12px;
     }
-    .tabContent {
-      display: none;
-    }
-    .visible {
-      display: block;
-    }
+
+    .tabContent { display: none; }
+    .visible { display: block; }
+
     .homeView {
       text-align: center;
       position: relative;
@@ -66,15 +69,18 @@
       justify-content: center;
       align-items: center;
     }
+
     .title {
       font-size: 40px;
       margin-bottom: 20px;
     }
+
     .searchContainer {
       display: flex;
       gap: 10px;
       z-index: 2;
     }
+
     .star {
       position: absolute;
       font-size: 16px;
@@ -82,19 +88,23 @@
       animation: fall 4s linear infinite;
       pointer-events: none;
     }
+
     @keyframes fall {
       from { transform: translateY(0); opacity: 1; }
       to   { transform: translateY(100vh); opacity: 0; }
     }
+
     iframe {
       width: 100%;
       height: 500px;
       border: 2px solid #00bfff;
     }
+
     .controls {
       text-align: center;
       margin: 10px 0;
     }
+
     .loadingText {
       font-size: 24px;
       text-align: center;
@@ -102,6 +112,7 @@
       color: #00bfff;
       margin: 20px;
     }
+
     @keyframes pulse {
       from { opacity: 0.3; }
       to   { opacity: 1; }
@@ -114,6 +125,8 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+      console.log("🌐 DOM fully loaded, initializing SimpleProxy...");
+
       let tabs = [];
       let activeTab = null;
 
@@ -157,9 +170,12 @@
 
       function switchTab(id) {
         activeTab = id;
-        document.querySelectorAll(".tabContent").forEach(div => div.classList.remove("visible"));
+        document.querySelectorAll(".tabContent").forEach(div =>
+          div.classList.remove("visible")
+        );
         document.getElementById(id)?.classList.add("visible");
         renderTabs();
+        console.log("🟢 Switched to tab:", id);
       }
 
       function closeTab(id) {
@@ -167,7 +183,6 @@
         tabs = tabs.filter(t => t.id !== id);
         if (tabs.length > 0) switchTab(tabs[0].id);
       }
-
       function createTabContent(id) {
         const contentArea = document.getElementById("contentArea");
         const wrapper = document.createElement("div");
@@ -212,6 +227,7 @@
 
         wrapper.appendChild(home);
         contentArea.appendChild(wrapper);
+        console.log("🌠 Starfall and home screen initialized for:", id);
       }
 
       function performSearch(tabId) {
@@ -248,6 +264,7 @@
         `;
         container.appendChild(controls);
         renderTabs();
+        console.log("🔎 Search performed for tab:", tabId);
       }
 
       function closeView(tabId) {
@@ -274,12 +291,11 @@
       }
 
       function fullscreen() {
-      function fullscreen() {
         const frame = document.getElementById("proxyFrame");
         if (frame?.requestFullscreen) frame.requestFullscreen();
       }
 
-      // Launch the first tab on page load
+      // 🚀 Launch tab immediately
       newTab();
     });
   </script>

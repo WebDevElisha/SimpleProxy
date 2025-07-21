@@ -1,3 +1,4 @@
+<!-- Save this as index.html in your SimpleProxy repo root -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,8 +96,8 @@
     }
 
     @keyframes fall {
-      from { top: -20px; opacity: 1; }
-      to { top: 100vh; opacity: 0; }
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(100vh); opacity: 0; }
     }
 
     iframe {
@@ -147,7 +148,8 @@
 
       tabs.forEach(tab => {
         const btn = document.createElement("div");
-        btn.className = "tabBtn" + (tab.id === activeTab ? " activeTab" : "");
+        btn.className = "tabBtn";
+        if (tab.id === activeTab) btn.classList.add("activeTab");
 
         const title = document.createElement("span");
         title.textContent = tab.title;
@@ -186,7 +188,6 @@
 
     function createTabContent(id) {
       const contentArea = document.getElementById("contentArea");
-
       const wrapper = document.createElement("div");
       wrapper.className = "tabContent visible";
       wrapper.id = id;
@@ -222,7 +223,8 @@
         star.className = "star";
         star.textContent = "★";
         star.style.left = `${Math.random() * window.innerWidth}px`;
-        star.style.animationDelay = `${Math.random() * 4}s`;
+        star.style.top = `${Math.random() * -100}px`; // starts above view
+        star.style.animationDelay = "0s"; // instant drop
         home.appendChild(star);
       }
 
@@ -293,8 +295,4 @@
       else if (frame.webkitRequestFullscreen) frame.webkitRequestFullscreen();
     }
 
-    // Launch with one tab
-    newTab();
-  </script>
-</body>
-</html>
+    // Start with

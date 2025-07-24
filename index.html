@@ -7,7 +7,7 @@
     body {
       margin: 0;
       background-color: #0a0a0a;
-      color: #00bfff;
+      color: #00ffcc;
       font-family: 'Orbitron', sans-serif;
       overflow-x: hidden;
     }
@@ -17,14 +17,14 @@
       gap: 5px;
       padding: 10px;
       background-color: #111;
-      border-bottom: 2px solid #00bfff;
+      border-bottom: 2px solid #00ffcc;
       flex-wrap: wrap;
     }
 
     .tabBtn {
       background-color: #222;
-      color: #00bfff;
-      border: 1px solid #00bfff;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
       padding: 5px 10px;
       display: inline-flex;
       align-items: center;
@@ -40,7 +40,7 @@
 
     button {
       padding: 10px;
-      background-color: #00bfff;
+      background-color: #00ffcc;
       color: black;
       border: none;
       cursor: pointer;
@@ -51,9 +51,9 @@
       padding: 10px;
       width: 400px;
       font-size: 18px;
-      border: 1px solid #00bfff;
+      border: 1px solid #00ffcc;
       background: black;
-      color: #00bfff;
+      color: #00ffcc;
       border-radius: 12px;
     }
 
@@ -95,10 +95,14 @@
       to   { transform: translateY(100vh); opacity: 0; }
     }
 
-    iframe {
+    .viewWindow {
       width: 100%;
       height: 500px;
-      border: 2px solid #00bfff;
+      border: 2px solid #00ffcc;
+      background-color: black;
+      color: white;
+      padding: 10px;
+      overflow-y: auto;
     }
 
     .controls {
@@ -110,7 +114,7 @@
       font-size: 24px;
       text-align: center;
       animation: pulse 1s infinite alternate;
-      color: #00bfff;
+      color: #00ffcc;
       margin: 20px;
     }
 
@@ -130,10 +134,10 @@
 
       function newTab(title = "Simple Tab", url = "") {
         const id = `tab${tabs.length}`;
-        tabs.push({ id, title, url, state: url ? "proxy" : "home" });
+        tabs.push({ id, title, url, state: url ? "view" : "home" });
         renderTabs();
         if (url) {
-          createProxyContent(id, url);
+          createWebView(id, url);
         } else {
           createTabContent(id);
         }
@@ -182,166 +186,84 @@
         tabs = tabs.filter(t => t.id !== id);
         if (tabs.length > 0) switchTab(tabs[0].id);
       }
-      function createTabContent(id) {
-        const contentArea = document.getElementById("contentArea");
-        const wrapper = document.createElement("div");
-        wrapper.className = "tabContent";
-        wrapper.id = id;
+<script>
+  function createTabContent(id) {
+    const container = document.createElement("div");
+    container.id = id;
+    container.className = "tabContent visible";
 
-        const home = document.createElement("div");
-        home.className = "homeView";
+    const home = document.createElement("div");
+    home.className = "homeView";
 
-        const title = document.createElement("div");
-        title.className = "title";
-        title.textContent = "SimpleProxy";
-        home.appendChild(title);
+    const title = document.createElement("div");
+    title.className = "title";
+    title.textContent = "SimpleProxy";
 
-        const searchWrap = document.createElement("div");
-        searchWrap.className = "searchContainer";
+    const searchContainer = document.createElement("div");
+    searchContainer.className = "searchContainer";
 
-        const input = document.createElement("input");
-        input.placeholder = "Search the web...";
-        input.className = "searchBox";
-        input.addEventListener("keypress", e => {
-          if (e.key === "Enter") performSearch(id);
-        });
-
-        const button = document.createElement("button");
-        button.textContent = "Go";
-        button.onclick = () => performSearch(id);
-
-        searchWrap.appendChild(input);
-        searchWrap.appendChild(button);
-        home.appendChild(searchWrap);
-
-        for (let i = 0; i < 30; i++) {
-          const star = document.createElement("div");
-          star.className = "star";
-          star.textContent = "★";
-          star.style.left = `${Math.random() * window.innerWidth}px`;
-          star.style.top = `${Math.random() * -300}px`;
-          star.style.animationDelay = `${Math.random() * 4}s`;
-          home.appendChild(star);
-        }
-
-        wrapper.appendChild(home);
-        contentArea.appendChild(wrapper);
+    const input = document.createElement("input");
+    input.placeholder = "Search DuckDuckGo...";
+    input.onkeypress = e => {
+      if (e.key === "Enter" && input.value.trim()) {
+        const searchQuery = input.value.trim().replace(/\s+/g, "+");
+        tabs.find(t => t.id === id).title = input.value;
+        loadSearch(id, `https://duckduckgo.com/?q=${searchQuery}`);
       }
+    };
 
-      function createProxyContent(tabId, url) {
-        const container = document.createElement("div");
-        container.className = "tabContent visible";
-        container.id = tabId;
+    const searchBtn = document.createElement("button");
+    searchBtn.textContent = "🔍";
+    searchBtn.onclick = () => {
+      const searchQuery = input.value.trim().replace(/\s+/g, "+");
+      tabs.find(t => t.id === id).title = input.value;
+      loadSearch(id, `https://duckduckgo.com/?q=${searchQuery}`);
+    };
 
-        const loadingMsg = document.createElement("div");
-        loadingMsg.className = "loadingText";
-        loadingMsg.textContent = "Loading...";
-        container.appendChild(loadingMsg);
+    searchContainer.appendChild(input);
+    searchContainer.appendChild(searchBtn);
+    home.appendChild(title);
+    home.appendChild(searchContainer);
+    container.appendChild(home);
+    document.getElementById("contentArea").appendChild(container);
+  }
 
-        const iframe = document.createElement("iframe");
-        iframe.src = url;
-        iframe.id = `proxyFrame-${tabId}`;
-        iframe.setAttribute("sandbox", "allow-scripts allow-forms allow-same-origin");
-        iframe.onload = () => {
-          loadingMsg.remove();
-          try {
-            iframe.contentWindow.open = function (newUrl) {
-              iframe.src = newUrl;
-              return null;
-            };
+  function createWebView(id, url) {
+    const container = document.createElement("div");
+    container.id = id;
+    container.className = "tabContent visible";
 
-            iframe.contentWindow.document.addEventListener("click", e => {
-              const link = e.target.closest("a");
-              if (link && e.ctrlKey && link.href) {
-                e.preventDefault();
-                newTab("Simple Tab", link.href);
-              }
-            });
+    const loading = document.createElement("div");
+    loading.className = "loadingText";
+    loading.textContent = "✨ Loading DuckDuckGlow…";
 
-            setTimeout(() => {
-              const pageTitle = iframe.contentWindow.document.title;
-              const tab = tabs.find(t => t.id === tabId);
-              if (
-                pageTitle &&
-                tab &&
-                !iframe.src.includes("bing.com/search")
-              ) {
-                tab.title = pageTitle;
-                renderTabs();
-              }
-            }, 1000);
-          } catch (err) {
-            console.warn("🚫 Could not update tab title due to CORS:", err);
-          }
-        };
-        container.appendChild(iframe);
+    const view = document.createElement("div");
+    view.className = "viewWindow";
 
-        const controls = document.createElement("div");
-        controls.className = "controls";
-        controls.innerHTML = `
-          <button onclick="goBack('${tabId}')">⬅ Back</button>
-          <button onclick="goForward('${tabId}')">➡ Forward</button>
-          <button onclick="reload('${tabId}')">🔄 Reload</button>
-          <button onclick="fullscreen('${tabId}')">⛶ Fullscreen</button>
-          <button onclick="closeView('${tabId}')">❌ Close View</button>
-        `;
-        container.appendChild(controls);
-        document.getElementById("contentArea").appendChild(container);
-      }
+    fetch(url)
+      .then(res => res.text())
+      .then(html => {
+        loading.remove();
+        view.innerHTML = html;
+      })
+      .catch(() => {
+        view.innerHTML = "🚫 Could not load search results.";
+      });
 
-      function performSearch(tabId) {
-        const tab = tabs.find(t => t.id === tabId);
-        const input = document.querySelector(`#${tabId} .searchBox`);
-        const query = input.value;
-        const url = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
-        tab.url = url;
-        tab.title = query;
-        tab.state = "proxy";
-        document.getElementById(tabId)?.remove();
-        createProxyContent(tabId, url);
-        renderTabs();
-      }
+    container.appendChild(loading);
+    container.appendChild(view);
+    document.getElementById("contentArea").appendChild(container);
+  }
 
-      function getFrame(tabId) {
-        return document.getElementById(`proxyFrame-${tabId}`);
-      }
+  function loadSearch(id, url) {
+    document.getElementById(id)?.remove();
+    tabs.find(t => t.id === id).url = url;
+    tabs.find(t => t.id === id).state = "view";
+    createWebView(id, url);
+    switchTab(id);
+    renderTabs();
+  }
 
-      function goBack(tabId) {
-        const frame = getFrame(tabId);
-        if (frame?.contentWindow) frame.contentWindow.history.back();
-      }
-
-      function goForward(tabId) {
-        const frame = getFrame(tabId);
-        if (frame?.contentWindow) frame.contentWindow.history.forward();
-      }
-
-      function reload(tabId) {
-        const frame = getFrame(tabId);
-        if (frame?.contentWindow) frame.contentWindow.location.reload();
-      }
-
-      function fullscreen(tabId) {
-        const frame = getFrame(tabId);
-        if (frame?.requestFullscreen) frame.requestFullscreen();
-      }
-
-      function closeView(tabId) {
-        const tab = tabs.find(t => t.id === tabId);
-        tab.state = "home";
-        document.getElementById(tabId)?.remove();
-        createTabContent(tabId);
-        switchTab(tabId);
-      }
-
-      window.goBack = goBack;
-      window.goForward = goForward;
-      window.reload = reload;
-      window.fullscreen = fullscreen;
-      window.closeView = closeView;
-
-      newTab();
-    });
-  </script>
-</body>
-</html>
+  // 🔥 Initial tab load
+  newTab();
+</script>

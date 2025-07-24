@@ -5,265 +5,157 @@
   <title>SimpleProxy</title>
   <style>
     body {
+      background: black;
+      color: #39ff14;
+      font-family: 'Courier New', monospace;
       margin: 0;
-      background-color: #0a0a0a;
-      color: #00ffcc;
-      font-family: 'Orbitron', sans-serif;
       overflow-x: hidden;
     }
 
-    #tabsBar {
-      display: flex;
-      gap: 5px;
-      padding: 10px;
-      background-color: #111;
-      border-bottom: 2px solid #00ffcc;
-      flex-wrap: wrap;
-    }
-
-    .tabBtn {
-      background-color: #222;
-      color: #00ffcc;
-      border: 1px solid #00ffcc;
-      padding: 5px 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
+    .tabButton {
+      border: 1px solid lime;
+      background: transparent;
+      color: lime;
+      padding: 6px 12px;
+      margin: 4px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
+      font-weight: bold;
     }
 
-    .activeTab {
-      background-color: #00ff66 !important;
-      color: black !important;
-    }
-
-    button {
-      padding: 10px;
-      background-color: #00ffcc;
+    .tabButton:hover {
+      background: lime;
       color: black;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
     }
 
-    input {
-      padding: 10px;
-      width: 400px;
-      font-size: 18px;
-      border: 1px solid #00ffcc;
-      background: black;
-      color: #00ffcc;
-      border-radius: 12px;
-    }
-
-    .tabContent { display: none; }
-    .visible { display: block; }
-
-    .homeView {
-      text-align: center;
+    .tabContent {
+      display: none;
+      padding: 20px;
+      border: 1px solid lime;
+      margin-top: 10px;
       position: relative;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
     }
 
-    .title {
-      font-size: 40px;
-      margin-bottom: 20px;
+    .tabContent.visible {
+      display: block;
     }
 
     .searchContainer {
-      display: flex;
-      gap: 10px;
-      z-index: 2;
+      margin-top: 10px;
     }
 
-    .star {
-      position: absolute;
-      font-size: 16px;
-      color: yellow;
-      animation: fall 4s linear infinite;
-      pointer-events: none;
+    .searchBox {
+      padding: 6px;
+      background: black;
+      color: lime;
+      border: 1px solid lime;
     }
 
-    @keyframes fall {
-      from { transform: translateY(0); opacity: 1; }
-      to   { transform: translateY(100vh); opacity: 0; }
-    }
-
-    .viewWindow {
+    .resultFrame {
       width: 100%;
-      height: 500px;
-      border: 2px solid #00ffcc;
-      background-color: black;
-      color: white;
-      padding: 10px;
-      overflow-y: auto;
+      height: 400px;
+      border: none;
+      margin-top: 20px;
     }
 
-    .controls {
-      text-align: center;
-      margin: 10px 0;
+    .title {
+      font-size: 32px;
+      font-weight: bold;
+      color: lime;
+      text-shadow: 0 0 5px lime, 0 0 10px lime;
+      animation: glow 2s infinite ease-in-out;
     }
 
-    .loadingText {
-      font-size: 24px;
-      text-align: center;
-      animation: pulse 1s infinite alternate;
-      color: #00ffcc;
-      margin: 20px;
+    @keyframes glow {
+      0% { text-shadow: 0 0 5px lime, 0 0 10px lime; }
+      50% { text-shadow: 0 0 15px lime, 0 0 30px lime; }
+      100% { text-shadow: 0 0 5px lime, 0 0 10px lime; }
     }
 
-    @keyframes pulse {
-      from { opacity: 0.3; }
-      to   { opacity: 1; }
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      background-image: radial-gradient(circle, lime 1px, transparent 1px);
+      background-size: 5px 5px;
+      animation: starfall 4s infinite linear;
+    }
+
+    @keyframes starfall {
+      from { background-position: 0 0; }
+      to { background-position: 0 100vh; }
     }
   </style>
 </head>
 <body>
-  <div id="tabsBar"></div>
+  <div id="buttonBar"></div>
   <div id="contentArea"></div>
+
   <script>
+    const tabs = [];
+
     document.addEventListener("DOMContentLoaded", () => {
-      let tabs = [];
-      let activeTab = null;
+      newTab("Welcome");
+    });
 
-      function newTab(title = "Simple Tab", url = "") {
-        const id = `tab${tabs.length}`;
-        tabs.push({ id, title, url, state: url ? "view" : "home" });
-        renderTabs();
-        if (url) {
-          createWebView(id, url);
-        } else {
-          createTabContent(id);
-        }
-        switchTab(id);
-      }
+    function newTab(title = "Welcome") {
+      const id = "tab" + Date.now();
+      tabs.push({ id, title });
 
-      function renderTabs() {
-        const tabsBar = document.getElementById("tabsBar");
-        tabsBar.innerHTML = "";
+      createTab(id, title);
+      createTabContent(id);
+      switchTab(id);
+    }
 
-        tabs.forEach(tab => {
-          const btn = document.createElement("div");
-          btn.className = "tabBtn";
-          if (tab.id === activeTab) btn.classList.add("activeTab");
+    function createTab(id, title) {
+      const tab = document.createElement("button");
+      tab.className = "tabButton";
+      tab.innerText = title;
+      tab.onclick = () => switchTab(id);
+      document.getElementById("buttonBar").appendChild(tab);
+    }
 
-          const title = document.createElement("span");
-          title.textContent = tab.title;
-          title.onclick = () => switchTab(tab.id);
+    function createTabContent(id) {
+      const container = document.createElement("div");
+      container.id = id;
+      container.className = "tabContent visible";
 
-          const close = document.createElement("span");
-          close.textContent = "❌";
-          close.onclick = () => closeTab(tab.id);
+      container.innerHTML = `
+        <div class="title">SimpleProxy</div>
+        <div class="searchContainer">
+          <input class="searchBox" placeholder="Search something..." />
+          <button onclick="triggerSearch('${id}')">🔍</button>
+        </div>
+        <div class="stars"></div>
+      `;
 
-          btn.appendChild(title);
-          btn.appendChild(close);
-          tabsBar.appendChild(btn);
-        });
+      document.getElementById("contentArea").appendChild(container);
+    }
 
-        const addBtn = document.createElement("button");
-        addBtn.textContent = "➕ New Tab";
-        addBtn.onclick = () => newTab();
-        tabsBar.appendChild(addBtn);
-      }
+    function switchTab(id) {
+      document.querySelectorAll(".tabContent").forEach(c => c.classList.remove("visible"));
+      const active = document.getElementById(id);
+      if (active) active.classList.add("visible");
+    }
 
-      function switchTab(id) {
-        activeTab = id;
-        document.querySelectorAll(".tabContent").forEach(div =>
-          div.classList.remove("visible")
-        );
-        document.getElementById(id)?.classList.add("visible");
-        renderTabs();
-      }
-
-      function closeTab(id) {
-        document.getElementById(id)?.remove();
-        tabs = tabs.filter(t => t.id !== id);
-        if (tabs.length > 0) switchTab(tabs[0].id);
-      }
-<script>
-  function createTabContent(id) {
-    const container = document.createElement("div");
-    container.id = id;
-    container.className = "tabContent visible";
-
-    const home = document.createElement("div");
-    home.className = "homeView";
-
-    const title = document.createElement("div");
-    title.className = "title";
-    title.textContent = "SimpleProxy";
-
-    const searchContainer = document.createElement("div");
-    searchContainer.className = "searchContainer";
-
-    const input = document.createElement("input");
-    input.placeholder = "Search DuckDuckGo...";
-    input.onkeypress = e => {
-      if (e.key === "Enter" && input.value.trim()) {
-        const searchQuery = input.value.trim().replace(/\s+/g, "+");
+    function triggerSearch(id) {
+      const input = document.querySelector(`#${id} .searchBox`);
+      const query = input?.value.trim().replace(/\s+/g, "+");
+      if (query) {
         tabs.find(t => t.id === id).title = input.value;
-        loadSearch(id, `https://duckduckgo.com/?q=${searchQuery}`);
+        loadSearch(id, query);
       }
-    };
+    }
 
-    const searchBtn = document.createElement("button");
-    searchBtn.textContent = "🔍";
-    searchBtn.onclick = () => {
-      const searchQuery = input.value.trim().replace(/\s+/g, "+");
-      tabs.find(t => t.id === id).title = input.value;
-      loadSearch(id, `https://duckduckgo.com/?q=${searchQuery}`);
-    };
-
-    searchContainer.appendChild(input);
-    searchContainer.appendChild(searchBtn);
-    home.appendChild(title);
-    home.appendChild(searchContainer);
-    container.appendChild(home);
-    document.getElementById("contentArea").appendChild(container);
-  }
-
-  function createWebView(id, url) {
-    const container = document.createElement("div");
-    container.id = id;
-    container.className = "tabContent visible";
-
-    const loading = document.createElement("div");
-    loading.className = "loadingText";
-    loading.textContent = "✨ Loading DuckDuckGlow…";
-
-    const view = document.createElement("div");
-    view.className = "viewWindow";
-
-    fetch(url)
-      .then(res => res.text())
-      .then(html => {
-        loading.remove();
-        view.innerHTML = html;
-      })
-      .catch(() => {
-        view.innerHTML = "🚫 Could not load search results.";
-      });
-
-    container.appendChild(loading);
-    container.appendChild(view);
-    document.getElementById("contentArea").appendChild(container);
-  }
-
-  function loadSearch(id, url) {
-    document.getElementById(id)?.remove();
-    tabs.find(t => t.id === id).url = url;
-    tabs.find(t => t.id === id).state = "view";
-    createWebView(id, url);
-    switchTab(id);
-    renderTabs();
-  }
-
-  // 🔥 Initial tab load
-  newTab();
-</script>
+    function loadSearch(id, query) {
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://duckduckgo.com/?q=${query}`;
+      iframe.className = "resultFrame";
+      const container = document.getElementById(id);
+      container.innerHTML = "";
+      container.appendChild(iframe);
+    }
+  </script>
+</body>
+</html>

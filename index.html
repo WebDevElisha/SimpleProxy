@@ -264,7 +264,7 @@
               if (
                 pageTitle &&
                 tab &&
-                !pageTitle.toLowerCase().includes("duckduckgo")
+                !iframe.src.includes("bing.com/search")
               ) {
                 tab.title = pageTitle;
                 renderTabs();
@@ -293,7 +293,7 @@
         const tab = tabs.find(t => t.id === tabId);
         const input = document.querySelector(`#${tabId} .searchBox`);
         const query = input.value;
-        const url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`;
+        const url = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
         tab.url = url;
         tab.title = query;
         tab.state = "proxy";

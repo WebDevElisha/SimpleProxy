@@ -128,7 +128,7 @@
       let tabs = [];
       let activeTab = null;
 
-      function newTab(title = "New Tab", url = "") {
+      function newTab(title = "Simple Tab", url = "") {
         const id = `tab${tabs.length}`;
         tabs.push({ id, title, url, state: url ? "proxy" : "home" });
         renderTabs();
@@ -245,32 +245,33 @@
         iframe.onload = () => {
           loadingMsg.remove();
           try {
-            // 🔁 Redirect window.open inside the same iframe
             iframe.contentWindow.open = function (newUrl) {
               iframe.src = newUrl;
               return null;
             };
 
-            // 🖱 CTRL+Click on links creates a new tab
             iframe.contentWindow.document.addEventListener("click", e => {
               const link = e.target.closest("a");
               if (link && e.ctrlKey && link.href) {
                 e.preventDefault();
-                newTab("CTRL+Click", link.href);
+                newTab("Simple Tab", link.href);
               }
             });
 
-            // 🧠 Update tab title from page title (if accessible)
             setTimeout(() => {
-              const docTitle = iframe.contentWindow.document.title;
+              const pageTitle = iframe.contentWindow.document.title;
               const tab = tabs.find(t => t.id === tabId);
-              if (docTitle && tab) {
-                tab.title = docTitle;
+              if (
+                pageTitle &&
+                tab &&
+                !pageTitle.toLowerCase().includes("duckduckgo")
+              ) {
+                tab.title = pageTitle;
                 renderTabs();
               }
             }, 1000);
           } catch (err) {
-            console.warn("🚫 CORS blocked title or click interception:", err);
+            console.warn("🚫 Could not update tab title due to CORS:", err);
           }
         };
         container.appendChild(iframe);

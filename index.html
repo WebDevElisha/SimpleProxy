@@ -5,167 +5,342 @@
   <title>SimpleProxy</title>
   <style>
     body {
-      background-color: #0b0f19;
-      color: #dbeafe;
-      font-family: 'Segoe UI', sans-serif;
       margin: 0;
+      background-color: #0a0a0a;
+      color: #00bfff;
+      font-family: 'Orbitron', sans-serif;
+      overflow-x: hidden;
     }
 
-    #buttonBar {
-      padding: 10px;
-      background-color: #111827;
-      border-bottom: 2px solid #3b82f6;
+    #tabsBar {
       display: flex;
-      gap: 8px;
-      justify-content: flex-start;
+      gap: 5px;
+      padding: 10px;
+      background-color: #111;
+      border-bottom: 2px solid #00bfff;
+      flex-wrap: wrap;
     }
 
-    .tabButton {
-      background-color: #1f2937;
-      color: #93c5fd;
-      border: 1px solid #3b82f6;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-weight: 500;
+    .tabBtn {
+      background-color: #222;
+      color: #00bfff;
+      border: 1px solid #00bfff;
+      padding: 5px 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: background-color 0.3s ease;
     }
 
-    .tabButton:hover {
-      background-color: #3b82f6;
-      color: #0b0f19;
+    .activeTab {
+      background-color: #00ff66 !important;
+      color: black !important;
     }
 
-    .tabContent {
-      display: none;
-      padding: 20px;
-      border: 1px solid #3b82f6;
-      margin: 12px;
-      border-radius: 8px;
-      background-color: #111827;
+    button {
+      padding: 10px;
+      background-color: #00bfff;
+      color: black;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    input {
+      padding: 10px;
+      width: 400px;
+      font-size: 18px;
+      border: 1px solid #00bfff;
+      background: black;
+      color: #00bfff;
+      border-radius: 12px;
+    }
+
+    .tabContent { display: none; }
+    .visible { display: block; }
+
+    .homeView {
+      text-align: center;
       position: relative;
-      animation: fadeIn 0.3s ease-in-out;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
     }
 
-    .tabContent.visible {
-      display: block;
+    .title {
+      font-size: 40px;
+      margin-bottom: 20px;
     }
 
     .searchContainer {
       display: flex;
-      gap: 8px;
-      margin-top: 16px;
+      gap: 10px;
+      z-index: 2;
     }
 
-    .searchBox {
-      flex: 1;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #3b82f6;
-      background-color: #1e293b;
-      color: #dbeafe;
+    .star {
+      position: absolute;
+      font-size: 16px;
+      color: yellow;
+      animation: fall 4s linear infinite;
+      pointer-events: none;
     }
 
-    .searchBox::placeholder {
-      color: #60a5fa;
+    @keyframes fall {
+      from { transform: translateY(0); opacity: 1; }
+      to   { transform: translateY(100vh); opacity: 0; }
     }
 
-    .searchButton {
-      padding: 8px 12px;
-      background-color: #3b82f6;
-      border: none;
-      border-radius: 4px;
-      color: #0b0f19;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .title {
-      font-size: 28px;
-      color: #60a5fa;
-      text-shadow: 0 0 6px #3b82f6;
-    }
-
-    .resultFrame {
+    iframe {
       width: 100%;
       height: 500px;
-      border: none;
-      margin-top: 20px;
-      border-radius: 6px;
+      border: 2px solid #00bfff;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    .controls {
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .loadingText {
+      font-size: 24px;
+      text-align: center;
+      animation: pulse 1s infinite alternate;
+      color: #00bfff;
+      margin: 20px;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.3; }
+      to   { opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <div id="buttonBar"></div>
+  <div id="tabsBar"></div>
   <div id="contentArea"></div>
-
   <script>
-    const tabs = [];
-
     document.addEventListener("DOMContentLoaded", () => {
-      newTab("Welcome");
-    });
+      let tabs = [];
+      let activeTab = null;
 
-    function newTab(title = "Welcome") {
-      const id = "tab" + Date.now();
-      tabs.push({ id, title });
-      createTab(id, title);
-      createTabContent(id);
-      switchTab(id);
-    }
-
-    function createTab(id, title) {
-      const tab = document.createElement("button");
-      tab.className = "tabButton";
-      tab.innerText = title;
-      tab.onclick = () => switchTab(id);
-      document.getElementById("buttonBar").appendChild(tab);
-    }
-
-    function createTabContent(id) {
-      const container = document.createElement("div");
-      container.id = id;
-      container.className = "tabContent visible";
-
-      container.innerHTML = `
-        <div class="title">SimpleProxy</div>
-        <div class="searchContainer">
-          <input class="searchBox" placeholder="Search DuckDuckGo..." />
-          <button class="searchButton" onclick="triggerSearch('${id}')">🔍</button>
-        </div>
-      `;
-
-      document.getElementById("contentArea").appendChild(container);
-    }
-
-    function switchTab(id) {
-      document.querySelectorAll(".tabContent").forEach(c => c.classList.remove("visible"));
-      const active = document.getElementById(id);
-      if (active) active.classList.add("visible");
-    }
-
-    function triggerSearch(id) {
-      const input = document.querySelector(`#${id} .searchBox`);
-      const query = input?.value.trim().replace(/\s+/g, "+");
-      if (query) {
-        tabs.find(t => t.id === id).title = input.value;
-        loadSearch(id, query);
+      function newTab(title = "New Tab", url = "") {
+        const id = `tab${tabs.length}`;
+        tabs.push({ id, title, url, state: url ? "proxy" : "home" });
+        renderTabs();
+        if (url) {
+          createProxyContent(id, url);
+        } else {
+          createTabContent(id);
+        }
+        switchTab(id);
       }
-    }
 
-    function loadSearch(id, query) {
-      const iframe = document.createElement("iframe");
-      iframe.src = `https://duckduckgo.com/?q=${query}`;
-      iframe.className = "resultFrame";
-      const container = document.getElementById(id);
-      container.innerHTML = '';
-      container.appendChild(iframe);
-    }
+      function renderTabs() {
+        const tabsBar = document.getElementById("tabsBar");
+        tabsBar.innerHTML = "";
+
+        tabs.forEach(tab => {
+          const btn = document.createElement("div");
+          btn.className = "tabBtn";
+          if (tab.id === activeTab) btn.classList.add("activeTab");
+
+          const title = document.createElement("span");
+          title.textContent = tab.title;
+          title.onclick = () => switchTab(tab.id);
+
+          const close = document.createElement("span");
+          close.textContent = "❌";
+          close.onclick = () => closeTab(tab.id);
+
+          btn.appendChild(title);
+          btn.appendChild(close);
+          tabsBar.appendChild(btn);
+        });
+
+        const addBtn = document.createElement("button");
+        addBtn.textContent = "➕ New Tab";
+        addBtn.onclick = () => newTab();
+        tabsBar.appendChild(addBtn);
+      }
+
+      function switchTab(id) {
+        activeTab = id;
+        document.querySelectorAll(".tabContent").forEach(div =>
+          div.classList.remove("visible")
+        );
+        document.getElementById(id)?.classList.add("visible");
+        renderTabs();
+      }
+
+      function closeTab(id) {
+        document.getElementById(id)?.remove();
+        tabs = tabs.filter(t => t.id !== id);
+        if (tabs.length > 0) switchTab(tabs[0].id);
+      }
+      function createTabContent(id) {
+        const contentArea = document.getElementById("contentArea");
+        const wrapper = document.createElement("div");
+        wrapper.className = "tabContent";
+        wrapper.id = id;
+
+        const home = document.createElement("div");
+        home.className = "homeView";
+
+        const title = document.createElement("div");
+        title.className = "title";
+        title.textContent = "SimpleProxy";
+        home.appendChild(title);
+
+        const searchWrap = document.createElement("div");
+        searchWrap.className = "searchContainer";
+
+        const input = document.createElement("input");
+        input.placeholder = "Search the web...";
+        input.className = "searchBox";
+        input.addEventListener("keypress", e => {
+          if (e.key === "Enter") performSearch(id);
+        });
+
+        const button = document.createElement("button");
+        button.textContent = "Go";
+        button.onclick = () => performSearch(id);
+
+        searchWrap.appendChild(input);
+        searchWrap.appendChild(button);
+        home.appendChild(searchWrap);
+
+        for (let i = 0; i < 30; i++) {
+          const star = document.createElement("div");
+          star.className = "star";
+          star.textContent = "★";
+          star.style.left = `${Math.random() * window.innerWidth}px`;
+          star.style.top = `${Math.random() * -300}px`;
+          star.style.animationDelay = `${Math.random() * 4}s`;
+          home.appendChild(star);
+        }
+
+        wrapper.appendChild(home);
+        contentArea.appendChild(wrapper);
+      }
+
+      function createProxyContent(tabId, url) {
+        const container = document.createElement("div");
+        container.className = "tabContent visible";
+        container.id = tabId;
+
+        const loadingMsg = document.createElement("div");
+        loadingMsg.className = "loadingText";
+        loadingMsg.textContent = "Loading...";
+        container.appendChild(loadingMsg);
+
+        const iframe = document.createElement("iframe");
+        iframe.src = url;
+        iframe.id = `proxyFrame-${tabId}`;
+        iframe.setAttribute("sandbox", "allow-scripts allow-forms allow-same-origin");
+        iframe.onload = () => {
+          loadingMsg.remove();
+          try {
+            // 🔁 Redirect window.open inside the same iframe
+            iframe.contentWindow.open = function (newUrl) {
+              iframe.src = newUrl;
+              return null;
+            };
+
+            // 🖱 CTRL+Click on links creates a new tab
+            iframe.contentWindow.document.addEventListener("click", e => {
+              const link = e.target.closest("a");
+              if (link && e.ctrlKey && link.href) {
+                e.preventDefault();
+                newTab("CTRL+Click", link.href);
+              }
+            });
+
+            // 🧠 Update tab title from page title (if accessible)
+            setTimeout(() => {
+              const docTitle = iframe.contentWindow.document.title;
+              const tab = tabs.find(t => t.id === tabId);
+              if (docTitle && tab) {
+                tab.title = docTitle;
+                renderTabs();
+              }
+            }, 1000);
+          } catch (err) {
+            console.warn("🚫 CORS blocked title or click interception:", err);
+          }
+        };
+        container.appendChild(iframe);
+
+        const controls = document.createElement("div");
+        controls.className = "controls";
+        controls.innerHTML = `
+          <button onclick="goBack('${tabId}')">⬅ Back</button>
+          <button onclick="goForward('${tabId}')">➡ Forward</button>
+          <button onclick="reload('${tabId}')">🔄 Reload</button>
+          <button onclick="fullscreen('${tabId}')">⛶ Fullscreen</button>
+          <button onclick="closeView('${tabId}')">❌ Close View</button>
+        `;
+        container.appendChild(controls);
+        document.getElementById("contentArea").appendChild(container);
+      }
+
+      function performSearch(tabId) {
+        const tab = tabs.find(t => t.id === tabId);
+        const input = document.querySelector(`#${tabId} .searchBox`);
+        const query = input.value;
+        const url = `https://duckduckgo.com/?q=${encodeURIComponent(query)}&ia=web`;
+        tab.url = url;
+        tab.title = query;
+        tab.state = "proxy";
+        document.getElementById(tabId)?.remove();
+        createProxyContent(tabId, url);
+        renderTabs();
+      }
+
+      function getFrame(tabId) {
+        return document.getElementById(`proxyFrame-${tabId}`);
+      }
+
+      function goBack(tabId) {
+        const frame = getFrame(tabId);
+        if (frame?.contentWindow) frame.contentWindow.history.back();
+      }
+
+      function goForward(tabId) {
+        const frame = getFrame(tabId);
+        if (frame?.contentWindow) frame.contentWindow.history.forward();
+      }
+
+      function reload(tabId) {
+        const frame = getFrame(tabId);
+        if (frame?.contentWindow) frame.contentWindow.location.reload();
+      }
+
+      function fullscreen(tabId) {
+        const frame = getFrame(tabId);
+        if (frame?.requestFullscreen) frame.requestFullscreen();
+      }
+
+      function closeView(tabId) {
+        const tab = tabs.find(t => t.id === tabId);
+        tab.state = "home";
+        document.getElementById(tabId)?.remove();
+        createTabContent(tabId);
+        switchTab(tabId);
+      }
+
+      window.goBack = goBack;
+      window.goForward = goForward;
+      window.reload = reload;
+      window.fullscreen = fullscreen;
+      window.closeView = closeView;
+
+      newTab();
+    });
   </script>
 </body>
 </html>
